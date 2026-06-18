@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALAN.EXE — Fullstack Developer</title>
+<link rel="icon" type="image/png" href="/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14132b;
+    --bg-deep:#0a0918;
+    --panel:#1d1b3a;
+    --panel-light:#262352;
+    --border:#4a4470;
+    --cyan:#5ce1e6;
+    --pink:#ff5d8f;
+    --yellow:#ffd23f;
+    --green:#51e898;
+    --lavender:#c8c2f0;
+    --text:#f1f0fb;
+    --text-dim:#9b97c4;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'VT323', monospace;
+    font-size:22px;
+    line-height:1.55;
+    overflow-x:hidden;
+  }
+
+  h1,h2,.btn,.hero__boot,.item__rarity,.quest__id,.quest__status,.hero__start{
+    font-family:'Press Start 2P', cursive;
+  }
+
+  a{color:inherit; text-decoration:none;}
+
+  *:focus-visible{outline:3px solid var(--yellow); outline-offset:3px;}
+
+  img,svg{image-rendering:pixelated;}
+
+  /* ---------- atmosphere ---------- */
+  .scanlines{
+    position:fixed; inset:0; pointer-events:none; z-index:50;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,0,0,.12) 3px,
+      rgba(0,0,0,0) 4px
+    );
+    mix-blend-mode:overlay;
+  }
+
+  /* ---------- layout shells ---------- */
+  .section{
+    max-width:980px;
+    margin:0 auto;
+    padding:90px 24px;
+  }
+  .section__label{
+    font-size:14px;
+    color:var(--cyan);
+    letter-spacing:1px;
+    margin-bottom:28px;
+  }
+
+  .panel{
+    background:var(--panel);
+    border:4px solid var(--border);
+    clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);
+    padding:28px;
+  }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-block;
+    background:var(--panel-light);
+    border:3px solid var(--cyan);
+    color:var(--text);
+    font-size:13px;
+    padding:16px 22px;
+    cursor:pointer;
+    box-shadow: inset -4px -4px 0 0 rgba(0,0,0,.35), inset 4px 4px 0 0 rgba(255,255,255,.06);
+    transition:transform .08s ease;
+  }
+  .btn:hover{ transform:translate(-2px,-2px); border-color:var(--pink); }
+  .btn:active{ transform:translate(2px,2px); box-shadow: inset 4px 4px 0 0 rgba(0,0,0,.35); }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:60px 20px;
+    position:relative;
+    background:
+      radial-gradient(circle at 50% 20%, rgba(92,225,230,.08), transparent 60%),
+      var(--bg);
+  }
+  .hero__crt{
+    text-align:center;
+    max-width:560px;
+  }
+  .hero__boot{
+    font-size:11px;
+    color:var(--green);
+    margin-bottom:22px;
+    letter-spacing:1px;
+  }
+  .hero__title{
+    font-size:clamp(28px,7vw,46px);
+    color:var(--text);
+    text-shadow:4px 4px 0 var(--pink), 8px 8px 0 var(--panel-light);
+    margin-bottom:18px;
+  }
+  .hero__blink{
+    animation:blinkCursor 1s steps(1) infinite;
+    color:var(--yellow);
+  }
+  @media (prefers-reduced-motion: reduce){ .hero__blink{animation:none;} }
+  .hero__subtitle{
+    font-size:24px;
+    color:var(--cyan);
+    min-height:32px;
+    margin-bottom:36px;
+  }
+  .hero__sprite-wrap{ margin:0 auto 36px; }
+  .sprite-grid{
+    display:grid;
+    grid-template-columns:repeat(14,1fr);
+    grid-template-rows:repeat(18,1fr);
+    width:min(42vw,210px);
+    aspect-ratio:14/18;
+    margin:0 auto;
+    animation:bob 2.6s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce){ .sprite-grid{animation:none;} }
+  .sprite-grid div{ width:100%; height:100%; }
+
+  .hero__start{
+    background:transparent;
+    border:3px solid var(--yellow);
+    color:var(--yellow);
+    font-size:13px;
+    padding:18px 26px;
+    cursor:pointer;
+    animation:pulseStart 1.6s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce){ .hero__start{animation:none;} }
+  .hero__start:hover{ background:var(--yellow); color:var(--bg-deep); }
+
+  @keyframes blinkCursor{ 0%,50%{opacity:1;} 50.01%,100%{opacity:0;} }
+  @keyframes bob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
+  @keyframes pulseStart{ 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
+
+  /* ---------- dialog / bio ---------- */
+  .dialog{ margin-bottom:40px; }
+  .dialog__text{ font-size:22px; }
+  .dialog__text strong{ color:var(--pink); }
+
+  /* ---------- stats ---------- */
+  .stats__grid{ display:flex; flex-direction:column; gap:22px; }
+  .stat{ display:grid; grid-template-columns:170px 1fr 60px; align-items:center; gap:14px; }
+  .stat__label{ font-size:13px; color:var(--text-dim); font-family:'Press Start 2P', cursive; }
+  .stat__bar{ display:flex; gap:4px; }
+  .seg{
+    flex:1;
+    height:20px;
+    background:var(--panel-light);
+    border:2px solid var(--border);
+  }
+  .seg--filled{ background:var(--green); border-color:var(--green); }
+  .stat[data-stat="coffee"] .seg--filled{ background:var(--yellow); border-color:var(--yellow); }
+  .stat__value{ font-size:18px; color:var(--text-dim); text-align:right; }
+
+  @media (max-width:600px){
+    .stat{ grid-template-columns:1fr; gap:6px; }
+    .stat__value{ text-align:left; }
+  }
+
+  /* ---------- inventory ---------- */
+  .inventory__grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:18px;
+  }
+  .item{
+    background:var(--panel);
+    border:3px solid var(--border);
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .item--common{ border-color:var(--text-dim); }
+  .item--rare{ border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan) inset; }
+  .item--epic{ border-color:var(--pink); box-shadow:0 0 0 1px var(--pink) inset; }
+  .item--legendary{ border-color:var(--yellow); box-shadow:0 0 12px rgba(255,210,63,.35); }
+  .item__rarity{ font-size:9px; letter-spacing:1px; }
+  .item--common .item__rarity{ color:var(--text-dim); }
+  .item--rare .item__rarity{ color:var(--cyan); }
+  .item--epic .item__rarity{ color:var(--pink); }
+  .item--legendary .item__rarity{ color:var(--yellow); }
+  .item__name{ font-size:22px; }
+  .item__level{ font-size:16px; color:var(--text-dim); }
+
+  /* ---------- quests ---------- */
+  .quests__list{ display:flex; flex-direction:column; gap:22px; }
+  .quest{ display:flex; gap:20px; align-items:flex-start; }
+  .quest__id{ font-size:14px; color:var(--text-dim); padding-top:6px; flex-shrink:0; }
+  .quest__body{ flex:1; }
+  .quest__head{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+  .quest__title{ font-size:24px; color:var(--text); }
+  .quest__status{ font-size:10px; padding:6px 10px; flex-shrink:0; }
+  .quest__status--done{ background:rgba(81,232,152,.12); color:var(--green); border:2px solid var(--green); }
+  .quest__status--progress{ background:rgba(255,210,63,.12); color:var(--yellow); border:2px solid var(--yellow); }
+  .quest__desc{ font-size:20px; color:var(--text-dim); margin-bottom:14px; }
+  .quest__tech{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .tag{ font-size:14px; background:var(--panel-light); border:2px solid var(--border); padding:3px 10px; }
+  .quest__link{ font-size:15px; color:var(--cyan); border-bottom:2px solid var(--cyan); }
+
+  @media (max-width:600px){ .quest{ flex-direction:column; } }
+
+  /* ---------- save / contact ---------- */
+  .save__panel{ text-align:center; }
+  .save__text{ font-size:22px; margin-bottom:30px; color:var(--text-dim); }
+  .save__choices{ display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+
+  /* ---------- footer ---------- */
+  .footer{
+    text-align:center;
+    font-size:14px;
+    color:var(--text-dim);
+    padding:40px 20px 60px;
+  }
+
+  /* reveal-on-scroll */
+  .reveal{ opacity:0; transform:translateY(16px); transition:opacity .5s ease, transform .5s ease; }
+  .reveal.in-view{ opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scanlines" aria-hidden="true"></div>
+
+<header class="hero" id="top">
+  <div class="hero__crt">
+    <p class="hero__boot">ЗАГРУЗКА ЛИЧНОСТИ... <span id="bootPct">100%</span></p>
+    <h1 class="hero__title">ALAN<span class="hero__blink">_</span>.EXE</h1>
+    <p class="hero__subtitle" id="typewriter" aria-label="FULLSTACK-РАЗРАБОТЧИК / LVL 16"></p>
+    <div class="hero__sprite-wrap">
+      <div class="sprite-grid" id="sprite" aria-hidden="true"></div>
+    </div>
+    <button class="hero__start" id="startBtn">▸ НАЖМИ, ЧТОБЫ НАЧАТЬ</button>
+  </div>
+</header>
+
+<main>
+
+  <section class="section" id="stats">
+    <h2 class="section__label">// ХАРАКТЕРИСТИКИ</h2>
+    <div class="panel dialog reveal">
+      <p class="dialog__text">Привет! Я <strong>Алан</strong>, мне 16, и я fullstack-разработчик: пишу фронтенд, поднимаю бэкенд и не сплю по ночам, чтобы добить фичу до дедлайна. Кофе — это мой HP, а баги — мои боссы.</p>
+    </div>
+    <div class="stats__grid" id="statsGrid"></div>
+  </section>
+
+  <section class="section" id="inventory">
+    <h2 class="section__label">// ИНВЕНТАРЬ НАВЫКОВ</h2>
+    <div class="inventory__grid" id="inventoryGrid"></div>
+  </section>
+
+  <section class="section" id="quests">
+    <h2 class="section__label">// ЖУРНАЛ КВЕСТОВ</h2>
+    <div class="quests__list" id="questsList"></div>
+  </section>
+
+  <section class="section" id="save">
+    <h2 class="section__label">// СОХРАНИТЬ ИГРУ?</h2>
+    <div class="panel save__panel reveal">
+      <p class="save__text">Хочешь обсудить проект или просто закинуть «привет»? Жми любую кнопку ниже.</p>
+      <div class="save__choices">
+        <a class="btn" href="#" target="_blank" rel="noopener">GITHUB</a>
+        <a class="btn" href="tg://resolve?domain=into_smithereens" target="_blank" rel="noopener">TELEGRAM</a>
+        <a class="btn" href="mailto:alanhusnitdinov@gmail.com">EMAIL</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">© 2026 ALAN_DEV — СОБРАНО НА JS, КОФЕ И УПОРСТВЕ</footer>
+
+<script>
+(function(){
+
+  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- typewriter ---------- */
+  var fullText = "FULLSTACK-РАЗРАБОТЧИК / LVL 16";
+  var tw = document.getElementById('typewriter');
+  if(prefersReduced){
+    tw.textContent = fullText;
+  } else {
+    var i = 0;
+    function type(){
+      tw.textContent = fullText.slice(0, i) + (i % 2 === 0 ? '▌' : '');
+      i++;
+      if(i <= fullText.length){
+        setTimeout(type, 45);
+      } else {
+        tw.textContent = fullText;
+      }
+    }
+    type();
+  }
+
+  /* ---------- start button scroll ---------- */
+  document.getElementById('startBtn').addEventListener('click', function(){
+    document.getElementById('stats').scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth' });
+  });
+
+  /* ---------- pixel sprite (14 x 18 grid) ---------- */
+  var ROWS = [
+    "......OO......",
+    "......OO......",
+    ".....AAAA.....",
+    "...OOOOOOOO...",
+    "..OBBBBBBBBO..",
+    "..OBODDDDOBO..",
+    "..OBOEDDEOBO..",
+    "..OBOEDDEOBO..",
+    "..OBODDDDOBO..",
+    "..OBODMMDOBO..",
+    "..OBBBBBBBBO..",
+    "...OOOOOOOO...",
+    ".....BBBB.....",
+    "...OHHHHHHO...",
+    ".OHHAHHHHAHHO.",
+    ".OHHAHHHHAHHO.",
+    ".OHHAHHHHAHHO.",
+    ".OOOOOOOOOOOO."
+  ];
+  var COLORS = {
+    'O': 'var(--cyan)',
+    'B': 'var(--lavender)',
+    'D': 'var(--bg-deep)',
+    'E': 'var(--cyan)',
+    'M': 'var(--pink)',
+    'H': 'var(--pink)',
+    'A': 'var(--yellow)'
+  };
+
+  var spriteEl = document.getElementById('sprite');
+  var eyeCells = [];
+  ROWS.forEach(function(row){
+    row.split('').forEach(function(ch){
+      var cell = document.createElement('div');
+      if(ch !== '.'){
+        cell.style.background = COLORS[ch];
+        if(ch === 'E') eyeCells.push(cell);
+      }
+      spriteEl.appendChild(cell);
+    });
+  });
+
+  if(!prefersReduced){
+    function blink(){
+      eyeCells.forEach(function(c){ c.style.background = 'var(--bg-deep)'; });
+      setTimeout(function(){
+        eyeCells.forEach(function(c){ c.style.background = 'var(--cyan)'; });
+      }, 140);
+      setTimeout(blink, 2600 + Math.random() * 1800);
+    }
+    setTimeout(blink, 2000);
+  }
+
+  /* ---------- stats ---------- */
+  var statsData = [
+    { key:'frontend', label:'FRONTEND', value:9 },
+    { key:'backend', label:'BACKEND', value:8 },
+    { key:'design', label:'UI/UX ЧУТЬЕ', value:7 },
+    { key:'learning', label:'СКОРОСТЬ ОБУЧЕНИЯ', value:10 },
+    { key:'coffee', label:'КОФЕИН В КРОВИ', value:10 }
+  ];
+  var statsGrid = document.getElementById('statsGrid');
+  statsData.forEach(function(s){
+    var row = document.createElement('div');
+    row.className = 'stat';
+    row.setAttribute('data-stat', s.key);
+
+    var label = document.createElement('span');
+    label.className = 'stat__label';
+    label.textContent = s.label;
+
+    var bar = document.createElement('div');
+    bar.className = 'stat__bar';
+    for(var i = 0; i < 10; i++){
+      var seg = document.createElement('span');
+      seg.className = 'seg' + (i < s.value ? ' seg--filled' : '');
+      bar.appendChild(seg);
+    }
+
+    var val = document.createElement('span');
+    val.className = 'stat__value';
+    val.textContent = s.value + '/10';
+
+    row.appendChild(label);
+    row.appendChild(bar);
+    row.appendChild(val);
+    statsGrid.appendChild(row);
+  });
+
+  /* ---------- inventory ---------- */
+  var skillsData = [
+    { name:'HTML', level:'МАСТЕР', rarity:'legendary' },
+    { name:'CSS', level:'МАСТЕР', rarity:'legendary' },
+    { name:'React', level:'ЭКСПЕРТ', rarity:'epic' },
+    { name: 'Solidity', level: 'ЭКСПЕРТ', rarity: 'epic'},
+    { name:'JavaScript', level:'ЭКСПЕРТ', rarity:'epic' },
+    { name:'Git', level:'ПРОДВИНУТЫЙ', rarity:'rare' },
+    { name:'TypeScript', level:'ПРОДВИНУТЫЙ', rarity:'rare' },
+    { name:'Node.js', level:'ПРОДВИНУТЫЙ', rarity:'rare' },
+    { name:'Django', level:'ПРОДВИНУТЫЙ', rarity:'rare' },
+    { name:'PostgreSQL', level:'ИЗУЧАЮ', rarity:'common' },
+    { name:'Figma', level:'БАЗОВЫЙ', rarity:'common' },
+    { name:'Python', level:'БАЗОВЫЙ', rarity:'common' }
+  ];
+  var rarityLabels = { common:'ОБЫЧНЫЙ', rare:'РЕДКИЙ', epic:'ЭПИЧЕСКИЙ', legendary:'ЛЕГЕНДАРНЫЙ' };
+  var invGrid = document.getElementById('inventoryGrid');
+  skillsData.forEach(function(skill){
+    var card = document.createElement('div');
+    card.className = 'item item--' + skill.rarity;
+    card.innerHTML =
+      '<span class="item__rarity">' + rarityLabels[skill.rarity] + '</span>' +
+      '<span class="item__name">' + skill.name + '</span>' +
+      '<span class="item__level">УРОВЕНЬ: ' + skill.level + '</span>';
+    invGrid.appendChild(card);
+  });
+
+  /* ---------- quests ---------- */
+  var questsData = [
+    {
+      id:'01',
+      title:'PIXELSHOP — ИНТЕРНЕТ-МАГАЗИН',
+      desc:'Фронтенд на React, бэкенд на Node.js + Express, оплата через Stripe API. Корзина, личный кабинет, адаптивная вёрстка.',
+      tech:['React','Node.js','Express','Stripe'],
+      status:'done',
+      statusLabel:'ПРОЙДЕНО',
+      href:'#'
+    },
+    {
+      id:'02',
+      title:'TELEGRAM-БОТ ДЛЯ РАСПИСАНИЯ ШКОЛЫ',
+      desc:'Напоминает о домашке и звонках, хранит данные в базе, есть простая админ-панель для учителей.',
+      tech:['Python','SQLite','Telegram API'],
+      status:'done',
+      statusLabel:'ПРОЙДЕНО',
+      href:'#'
+    },
+    {
+      id:'03',
+      title:'ЭТОТ САЙТ-ПОРТФОЛИО',
+      desc:'Пиксельный лендинг о себе. Мета-квест: добавить сюда реальные проекты и контакты.',
+      tech:['HTML','CSS','JS'],
+      status:'progress',
+      statusLabel:'В ПРОЦЕССЕ',
+      href:'#'
+    }
+  ];
+  var questsList = document.getElementById('questsList');
+  questsData.forEach(function(q){
+    var item = document.createElement('div');
+    item.className = 'quest reveal';
+
+    var tags = q.tech.map(function(t){ return '<span class="tag">' + t + '</span>'; }).join('');
+
+    item.innerHTML =
+      '<span class="quest__id">QUEST<br>' + q.id + '</span>' +
+      '<div class="quest__body">' +
+        '<div class="quest__head">' +
+          '<span class="quest__title">' + q.title + '</span>' +
+          '<span class="quest__status quest__status--' + q.status + '">' + q.statusLabel + '</span>' +
+        '</div>' +
+        '<p class="quest__desc">' + q.desc + '</p>' +
+        '<div class="quest__tech">' + tags + '</div>' +
+        '<a class="quest__link" href="' + q.href + '" target="_blank" rel="noopener">ОТКРЫТЬ ПРОЕКТ →</a>' +
+      '</div>';
+
+    questsList.appendChild(item);
+  });
+
+  /* ---------- reveal on scroll ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('in-view');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function(el){ obs.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('in-view'); });
+  }
+
+})();
+</script>
+
+</body>
+</html>
